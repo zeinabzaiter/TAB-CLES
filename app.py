@@ -1,12 +1,16 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import requests
+import io
 
-# Charger les données
+# Charger les données correctement depuis GitHub
 @st.cache_data
 def load_data():
-    url = "https://raw.githubusercontent.com/votre_utilisateur/votre_repo/main/alertes_par_semaine_antibiotiques_2024.xlsx"
-    df = pd.read_excel(url)
+    url = "https://raw.githubusercontent.com/votre_utilisateur/votre_repo/main/alertes_par_semaine_antibiotiques_2024.xlsx"  # Remplacer par ton vrai lien RAW
+    response = requests.get(url)
+    file = io.BytesIO(response.content)
+    df = pd.read_excel(file)
     return df
 
 df = load_data()
