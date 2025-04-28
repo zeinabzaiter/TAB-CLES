@@ -1,31 +1,21 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import requests
-import io
 
-# Charger les données correctement
 @st.cache_data
 def load_data():
-    url = "https://raw.githubusercontent.com/zeinabzaiter/TAB-CLES/main/alertes_par_semaine_antibiotiques_2024.xlsx"
-    response = requests.get(url)
-    file = io.BytesIO(response.content)
-    df = pd.read_excel(file)
+    url = "https://raw.githubusercontent.com/zeinabzaiter/TAB-CLES/main/alertes_par_semaine_antibiotiques_2024.csv"
+    df = pd.read_csv(url)
     return df
 
-# Lire les données
 df = load_data()
 
-# Liste des antibiotiques
 antibiotiques = sorted(df['Antibiotic'].unique())
 
-# Sélection d'un antibiotique
 antibiotique_choisi = st.selectbox("Choisissez un antibiotique :", antibiotiques)
 
-# Filtrer
 df_filtre = df[df['Antibiotic'] == antibiotique_choisi]
 
-# Tracer
 base = alt.Chart(df_filtre).encode(
     x=alt.X('Semaine:O', title='Semaine'),
     y=alt.Y('% Resistance:Q', title='% de résistance'),
