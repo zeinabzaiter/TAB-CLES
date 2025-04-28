@@ -4,27 +4,28 @@ import altair as alt
 import requests
 import io
 
-# Charger les données correctement depuis GitHub
+# Charger les données correctement
 @st.cache_data
 def load_data():
-    url = "https://raw.githubusercontent.com/votre_utilisateur/votre_repo/main/alertes_par_semaine_antibiotiques_2024.xlsx"  # Remplacer par ton vrai lien RAW
+    url = "https://raw.githubusercontent.com/zeinabzaiter/TAB-CLES/main/alertes_par_semaine_antibiotiques_2024.xlsx"
     response = requests.get(url)
     file = io.BytesIO(response.content)
     df = pd.read_excel(file)
     return df
 
+# Lire les données
 df = load_data()
 
-# Liste des antibiotiques disponibles
+# Liste des antibiotiques
 antibiotiques = sorted(df['Antibiotic'].unique())
 
-# Sélectionner un antibiotique
-antibiotique_choisi = st.selectbox("Sélectionnez un antibiotique :", antibiotiques)
+# Sélection d'un antibiotique
+antibiotique_choisi = st.selectbox("Choisissez un antibiotique :", antibiotiques)
 
-# Filtrer les données
+# Filtrer
 df_filtre = df[df['Antibiotic'] == antibiotique_choisi]
 
-# Créer le graphique
+# Tracer
 base = alt.Chart(df_filtre).encode(
     x=alt.X('Semaine:O', title='Semaine'),
     y=alt.Y('% Resistance:Q', title='% de résistance'),
@@ -35,18 +36,16 @@ courbe = base.mark_line(color='steelblue')
 points = base.mark_circle(size=60).encode(
     color=alt.condition(
         alt.datum.Alerte == 'OUI',
-        alt.value('red'),  # Rouge si alerte
-        alt.value('steelblue')  # Bleu sinon
+        alt.value('red'), 
+        alt.value('steelblue')
     )
 )
 
-# Ligne horizontale du seuil d'alerte
 seuil_value = df_filtre['Seuil Alerte (%)'].iloc[0]
 ligne_seuil = alt.Chart(pd.DataFrame({'y': [seuil_value]})).mark_rule(
     color='orange', strokeDash=[5,5]
 ).encode(y='y:Q')
 
-# Combiner
 graphique = (courbe + points + ligne_seuil).properties(
     title=f'Evolution de la résistance pour {antibiotique_choisi}',
     width=700,
